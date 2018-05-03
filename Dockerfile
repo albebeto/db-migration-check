@@ -14,26 +14,28 @@ RUN set -x \
     && apt-get -y clean
 
 # Set db in keystone.conf
-RUN sed -i -e "s/connection = sqlite:\/\/\/\/var\/lib\/keystone\/keystone.db/connection = mysql:\/\/root:my-secret-pw@127.0.0.1\/keystone/" "/etc/keystone/keystone.conf"
+#RUN sed -i -e "s/connection = sqlite:\/\/\/\/var\/lib\/keystone\/keystone.db/connection = mysql:\/\/root:my-secret-pw@127.0.0.1\/keystone/" "/etc/keystone/keystone.conf"
+RUN sed -i -e "s/connection = sqlite:\/\/\/\/var\/lib\/keystone\/keystone.db/connection = mysql:\/\/root:${MYSQL_ROOT_PASSWORD}@${OPENSTACK_DB_HOST}\/keystone/" "/etc/keystone/keystone.conf"
 
 # Set db in glance.conf
-RUN sed -i -e "s/#connection = <None>/connection = mysql:\/\/root:my-secret-pw@127.0.0.1\/glance/" "/etc/glance/glance-api.conf"
+#RUN sed -i -e "s/#connection = <None>/connection = mysql:\/\/root:my-secret-pw@127.0.0.1\/glance/" "/etc/glance/glance-api.conf"
+RUN sed -i -e "s/#connection = <None>/connection = mysql:\/\/root:${MYSQL_ROOT_PASSWORD}@${OPENSTACK_DB_HOST}\/glance/" "/etc/glance/glance-api.conf"
 
 #Set db in nova.conf
 RUN echo "[database] \n\
-connection = mysql://root:my-secret-pw@127.0.0.1/nova" >> /etc/nova/nova.conf
+connection = mysql://root:${MYSQL_ROOT_PASSWORD}@${OPENSTACK_DB_HOST}/nova" >> /etc/nova/nova.conf
 RUN echo "[api_database] \n\
-connection = mysql://root:my-secret-pw@127.0.0.1/nova_api" >> /etc/nova/nova.conf
+connection = mysql://root:${MYSQL_ROOT_PASSWORD}@${OPENSTACK_DB_HOST}/nova_api" >> /etc/nova/nova.conf
 
 #Set db in cinder.conf
+#RUN echo "[database] \n\
+#connection = mysql://root:my-secret-pw@127.0.0.1/cinder" >> /etc/cinder/cinder.conf
 RUN echo "[database] \n\
-connection = mysql://root:my-secret-pw@127.0.0.1/cinder" >> /etc/cinder/cinder.conf
+connection = mysql://root:${MYSQL_ROOT_PASSWORD}@${OPENSTACK_DB_HOST}/cinder" >> /etc/cinder/cinder.conf
 
 #Set db in neutron.conf
-RUN sed -i -e "s/connection = sqlite:\/\/\/\/var\/lib\/neutron\/neutron.sqlite/connection = mysql:\/\/root:my-secret-pw@127.0.0.1\/neutron/" "/etc/neutron/neutron.conf"
-
-##Set db in heat.conf
-#RUN sed -i -e "s/#connection = <None>/connection = mysql:\/\/root:my-secret-pw@127.0.0.1\/heat/" "/etc/heat/heat.conf"
+#RUN sed -i -e "s/connection = sqlite:\/\/\/\/var\/lib\/neutron\/neutron.sqlite/connection = mysql:\/\/root:my-secret-pw@127.0.0.1\/neutron/" "/etc/neutron/neutron.conf"
+RUN sed -i -e "s/connection = sqlite:\/\/\/\/var\/lib\/neutron\/neutron.sqlite/connection = mysql:\/\/root:${MYSQL_ROOT_PASSWORD}@${OPENSTACK_DB_HOST}\/neutron/" "/etc/neutron/neutron.conf"
 
 COPY dbtests.sh /dbtests.sh
 RUN chown root.root /dbtests.sh  && chmod a+x /dbtests.sh
